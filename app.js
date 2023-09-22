@@ -1,11 +1,13 @@
 import { filters, products } from "./data.js";
 
+const searchInput = document.getElementById("search-input");
 const filterContainer = document.querySelector(".filters");
 const productsContainer = document.querySelector(".results");
 const filterSelects = showFilters();
 
 showProducts(products);
 
+searchInput.oninput = handleChangeFilter;
 filterContainer.onchange = handleChangeFilter;
 
 function showFilters() {
@@ -82,7 +84,7 @@ function buildProductMarkup(product) {
   `;
 }
 
-function handleChangeFilter(e) {
+function handleChangeFilter() {
   const selectedFilters = filterSelects
     .map(select => [select.dataset.id, select.value]);
 
@@ -94,6 +96,17 @@ function handleChangeFilter(e) {
     });
   });
 
-  showProducts(filteredProducts);
+  showProducts(filteredProducts.filter(satisfiesSearch));
 }
+
+function satisfiesSearch(product) {
+  const search = searchInput.value.trim().toLowerCase();
+
+  if (!search) return true;
+
+  const { title, description, params: {year, color, country, category} } = product;
+
+  const pruductValues = [title, description, year, color, country, category].map(String).map(value => value.toLowerCase());
   
+  return pruductValues.some(value => value.includes(search));
+}
